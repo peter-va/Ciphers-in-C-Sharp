@@ -1,35 +1,32 @@
 using System;
 using System.IO;
-using System.Text;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Linq;
 
 namespace CSharp{
     class Keyword:Cipher{
-        public static char firstMissingChar(Dictionary<char,char> dict, bool Decrypt){
+        public static char firstMissingChar(Dictionary<char,char> dict, bool Decrypt){ //find first available character for key
             for(int i = 0;i<26;i++){
-                if(Decrypt == true){
+                if(Decrypt == true)
                     if(!dict.ContainsKey((char)(97+i)))
                         return (char)(97+i);
-                }
-                else{
-                    if(!dict.ContainsValue((char)(97+i))){
-                        return (char)(97+i); }
-                }
+                else
+                    if(!dict.ContainsValue((char)(97+i)))
+                        return (char)(97+i);
             }
             return '\0';
         }
-        public static Dictionary<char,char>  buildKey(string keyword, string key, bool Decrypt){
+        public static Dictionary<char,char> buildKey(string keyword, string key, bool Decrypt){
             Dictionary<char,char> Key = new Dictionary<char, char>();
             int foundLetters = 0;
-            for(int i = 0;i<keyword.Length;i++){
+            for(int i = 0;i<keyword.Length;i++){ //add keyword to key
                 if(Decrypt == true)
                     Key.Add(keyword[i],(char)(97+i));
                 else
                     Key.Add((char)(97+i),keyword[i]);
             }
-            for(int i = 0;i<26;i++){
+            for(int i = 0;i<26;i++){ //add the rest of the letters in the alphabet
                 if(Decrypt == true){
                     if(!keyword.Contains((char)(97+i))){
                         Key.Add(firstMissingChar(Key, Decrypt),(char)(97+keyword.Length+foundLetters));
@@ -46,9 +43,9 @@ namespace CSharp{
             return Key;
         }
         public static void runCrypto(string toEncrypt, string keyword, bool Decrypt){
-            Dictionary<char, char> cryptoKey = buildKey(keyword, toEncrypt, Decrypt);
+            Dictionary<char, char> cryptoKey = buildKey(keyword, toEncrypt, Decrypt); //build crypto key
             string newText = null;
-            System.Text.StringBuilder cryptoed = new System.Text.StringBuilder();
+            System.Text.StringBuilder cryptoed = new System.Text.StringBuilder(); //build string to return
             for(int i = 0;i<toEncrypt.Length;i++){
                 if(!cryptoKey.ContainsKey(toEncrypt[i]))
                     cryptoed.Append(toEncrypt[i]);
@@ -56,31 +53,31 @@ namespace CSharp{
                     cryptoed.Append(cryptoKey[toEncrypt[i]]);
             }
             newText = cryptoed.ToString();
-            if(writeBackPrompt(newText) == false)
+            if(writeBackPrompt(newText) == false) //write back prompt
                 Console.WriteLine(newText);
         }
 
         public static void Verify(bool Decrypt){
-            string filename = null;
-            string keyword = null;
-            string toEncrypt = null;
-            filePrompt(Decrypt);
+            string filename = null; //self explanatory
+            string keyword = null; //self explanatory
+            string toEncrypt = null; //get text for crypto
+            filePrompt(Decrypt); //file prompt
             filename = Console.ReadLine();
-            while(!File.Exists(filename)){
+            while(!File.Exists(filename)){ //check for valid filename
                 if(filename == "cancel")
                     return;
                 filePrompt(Decrypt);
                 filename = Console.ReadLine();
             }
-            toEncrypt = File.ReadAllText(filename);
+            toEncrypt = File.ReadAllText(filename); //read in text
             toEncrypt = toEncrypt.ToLower();
             Console.WriteLine("\nEnter your desired keyword (letters only): ");
             keyword = Console.ReadLine();
-            while(!Regex.IsMatch(keyword,@"^[a-zA-Z]+$")){
+            while(!Regex.IsMatch(keyword,@"^[a-zA-Z]+$")){ //check for valid keyword
                 Console.WriteLine("\nEnter your desired keyword (letters only): ");
                 keyword = Console.ReadLine(); 
             }
-            keyword = new string(keyword.ToCharArray().Distinct().ToArray());
+            keyword = new string(keyword.ToCharArray().Distinct().ToArray()); //convert keyword to array string
             keyword = keyword.ToLower();
             runCrypto(toEncrypt, keyword, Decrypt);
         }
