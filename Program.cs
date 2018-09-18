@@ -1,32 +1,40 @@
 ﻿using System;
 using System.IO;
-using System.Text;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using System.Linq;
+using System.Windows.Forms;
 
 namespace CSharp
 {
     abstract class Cipher
     {
-        public static void filePrompt(bool Decrypt){
+        public static bool keyKnown() { //is the key or shift known
+            DialogResult dialogResult = MessageBox.Show("Do you know the correct key or shift value?", "", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.Yes)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public static void filePrompt(bool Decrypt){ //prompt for file to use
             if(Decrypt == true)
                 Console.Write("\nEnter the name of the file you want to decrypt (including file extension) Enter \"cancel\" to cancel: "); 
             else
                 Console.Write("\nEnter the name of the file you want to encrypt (including file extension) Enter \"cancel\" to cancel: ");
         }
-        public static bool writeBackPrompt(string cryptoed){
+        public static bool writeBackPrompt(string cryptoed){ //Prompt for writing result to a file
             string input = null;
             Console.Write("Press 'w' to write the result to a text file. Press any other key to continue without doing so.");
             input = Console.ReadLine();
             if(input == "w"){
                 Console.Write("\nEnter the desired name of your file (include the extension): ");
                 input = Console.ReadLine();
-                while(input.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || File.Exists(input)){
+                while(input.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || File.Exists(input)){ //make sure it's a valid filename and we're not overwriting anything that exists
                     Console.Write("Invalid File Name! Please enter a valid file name: ");
                     input = Console.ReadLine();
                 }
-                File.WriteAllText(input, cryptoed);
+                File.WriteAllText(input, cryptoed); //write the text
                 return true;
             }
             return false;
@@ -34,7 +42,7 @@ namespace CSharp
     }
     class Program
     {
-        static void VigenereHelper(){
+        static void VigenereHelper(){ //helper function to transfer to Vignere class
             string vigenereInput = null;
             Console.WriteLine("\nEnter 1 for decryption, 2 for encryption, or \"cancel\" to cancel: ");
             vigenereInput = Console.ReadLine();
@@ -53,7 +61,7 @@ namespace CSharp
                     break;
             }
         }
-        static void CaesarHelper(){
+        static void CaesarHelper(){ //helper function to transfer to Caesar class
             string caesarInput = null;
             while(true){
                 Console.WriteLine("\nEnter 1 for decryption, 2 for encryption, or \"cancel\" to cancel: ");
@@ -74,7 +82,7 @@ namespace CSharp
                 }
             }
         }
-        static void KeywordHelper(){
+        static void KeywordHelper(){ //helper function to transfer to Keyword class
             string keywordInput = null;
             while(true){
                 Console.WriteLine("\nEnter 1 for decryption, 2 for encryption, or \"cancel\" to cancel: ");

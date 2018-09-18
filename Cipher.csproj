@@ -64,15 +64,14 @@
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="file.txt" />
-    <Content Include="gbadec.txt" />
-    <Content Include="gettysburg.txt" />
-    <Content Include="keydec.txt" />
-    <Content Include="keyenc.txt" />
-    <Content Include="words.txt" />
+    <Content Include="bin\Debug\file.txt" />
+    <Content Include="bin\Debug\gbadec.txt" />
+    <Content Include="bin\Debug\gettysburg.txt" />
+    <Content Include="bin\Debug\keydec.txt" />
+    <Content Include="bin\Debug\keyenc.txt" />
+    <Content Include="bin\Debug\words.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="bin\Debug\" />
     <Folder Include="obj\Debug\TempPE\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
