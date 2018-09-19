@@ -6,6 +6,12 @@ using System.Text.RegularExpressions;
 
 namespace CSharp{
     class Vigenere:Cipher{
+        public static void getKeyword(string toDecipher, int ioc)
+        {
+            //TODO: find keyword
+            //TODO: decipher (will use runCrypto())
+            return;
+        }
         public static string getAlphabet(string text, int offset, int interval)
         {
             int index = offset;
@@ -17,7 +23,7 @@ namespace CSharp{
             }
             return stringer.ToString();
         }
-        public static double indexOfCoincidence(string text, int maxLen)
+        public static int indexOfCoincidence(string text, int maxLen)
         {
             text = string.Concat(text.Where(c => !char.IsWhiteSpace(c)));
             int keylen = 0;
@@ -128,8 +134,9 @@ namespace CSharp{
                     Console.WriteLine("\nEnter the maximum length keyword to check: ");
                     max = Console.ReadLine();
                 }
-                double ioc = indexOfCoincidence(toCrypto, maxLen);
+                int ioc = indexOfCoincidence(toCrypto, maxLen);
                 Console.WriteLine("\nThe most likely keylength is " + ioc);
+                getKeyword(toCrypto, ioc);
                 System.Environment.Exit(1);
             }
             runCrypto(toCrypto,keyword,true);
