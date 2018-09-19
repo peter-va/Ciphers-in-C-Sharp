@@ -14,42 +14,42 @@ namespace CSharp{
         }
         public static string getAlphabet(string text, int offset, int interval)
         {
-            int index = offset;
+            int index = offset; //hold initial index for alphabet
             StringBuilder stringer = new StringBuilder();
             while(text.Length >= index+1)
             {
-                stringer.Append(text[index]);
+                stringer.Append(text[index]); //add each n-th character
                 index += interval;
             }
             return stringer.ToString();
         }
         public static int indexOfCoincidence(string text, int maxLen)
         {
-            text = string.Concat(text.Where(c => !char.IsWhiteSpace(c)));
-            int keylen = 0;
-            double keylenvalue = 0;
-            double freqs = 0;
-            for (int i = 1; i <= maxLen; i++)
+            text = string.Concat(text.Where(c => !char.IsWhiteSpace(c))); //strip whitespace
+            int keylen = 0; //most likely key length
+            double keylenvalue = 0; //ioc value for most likely keylength
+            double freqs = 0; //calculating ioc values
+            for (int i = 1; i <= maxLen; i++) //go through all key lengths up to max
             {
-                freqs = 0;
-                for (int k = 0; k < i; k++)
+                freqs = 0; //reset ioc value
+                for (int k = 0; k < i; k++) //get each sub-alphabet for each key length
                 {
-                    string newText = getAlphabet(text, k, i);
+                    string newText = getAlphabet(text, k, i); //getting the sub-alphabet
                     Regex rgx = new Regex("[^a-z -]");
-                    newText = rgx.Replace(newText, "");
-                    double charCount = 0;
-                    double stringLen = newText.Length;
-                    for (int j = 0; j < 26; j++)
+                    newText = rgx.Replace(newText, ""); //strip non alphabetic characters
+                    double charCount = 0; //count of each character
+                    double stringLen = newText.Length; //length of sub-alphabet
+                    for (int j = 0; j < 26; j++) //for each letter
                     {
                         charCount = newText.Count(x => x == (char)(97 + j));
-                        freqs += (charCount / stringLen) * ((charCount - 1) / (stringLen - 1));
+                        freqs += (charCount / stringLen) * ((charCount - 1) / (stringLen - 1)); //sum up all sub-alphabets for average
                     }                    
                 }
-                freqs /= (double)i;
+                freqs /= (double)i; //divide by key length for average
                 if (freqs > keylenvalue)
                 {
-                    keylenvalue = freqs;
-                    keylen = i;
+                    keylenvalue = freqs; //new highest average ioc
+                    keylen = i; //new most likely key length
                 }
             }
             return keylen;
