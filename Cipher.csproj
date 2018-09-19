@@ -64,6 +64,7 @@
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="bin\Debug\ioc.txt" />
     <Content Include="bin\Debug\file.txt" />
     <Content Include="bin\Debug\gbadec.txt" />
     <Content Include="bin\Debug\gettysburg.txt" />

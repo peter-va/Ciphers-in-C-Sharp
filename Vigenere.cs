@@ -1,9 +1,53 @@
 using System;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace CSharp{
     class Vigenere:Cipher{
+        public static string getAlphabet(string text, int offset, int interval)
+        {
+            int index = offset;
+            StringBuilder stringer = new StringBuilder();
+            while(text.Length >= index+1)
+            {
+                stringer.Append(text[index]);
+                index += interval;
+            }
+            return stringer.ToString();
+        }
+        public static double indexOfCoincidence(string text, int maxLen)
+        {
+            text = string.Concat(text.Where(c => !char.IsWhiteSpace(c)));
+            int keylen = 0;
+            double keylenvalue = 0;
+            double freqs = 0;
+            for (int i = 1; i <= maxLen; i++)
+            {
+                freqs = 0;
+                for (int k = 0; k < i; k++)
+                {
+                    string newText = getAlphabet(text, k, i);
+                    Regex rgx = new Regex("[^a-z -]");
+                    newText = rgx.Replace(newText, "");
+                    double charCount = 0;
+                    double stringLen = newText.Length;
+                    for (int j = 0; j < 26; j++)
+                    {
+                        charCount = newText.Count(x => x == (char)(97 + j));
+                        freqs += (charCount / stringLen) * ((charCount - 1) / (stringLen - 1));
+                    }                    
+                }
+                freqs /= (double)i;
+                if (freqs > keylenvalue)
+                {
+                    keylenvalue = freqs;
+                    keylen = i;
+                }
+            }
+            return keylen;
+        }
         public static char getUpperChar(int i, int j){ //get shifted uppercase letter
            if(65+i+j>90)
                 return (char)(65+i+j-26);
@@ -65,11 +109,28 @@ namespace CSharp{
             }
             toCrypto = File.ReadAllText(filename); //get text from file
             toCrypto = toCrypto.ToLower();
-            Console.WriteLine("\nEnter your desired keyword (letters only): ");
-            keyword = Console.ReadLine();
-            while(!Regex.IsMatch(keyword,@"^[a-zA-Z]+$")){
+            if (keyKnown())
+            {
                 Console.WriteLine("\nEnter your desired keyword (letters only): ");
-                keyword = Console.ReadLine(); 
+                keyword = Console.ReadLine();
+                while (!Regex.IsMatch(keyword, @"^[a-zA-Z]+$"))
+                {
+                    Console.WriteLine("\nEnter your desired keyword (letters only): ");
+                    keyword = Console.ReadLine();
+                }
+            }
+            else
+            {
+                Console.WriteLine("\nEnter the maximum length keyword to check: ");
+                int maxLen = 0;
+                string max = Console.ReadLine();
+                while(!int.TryParse(max, out maxLen)){
+                    Console.WriteLine("\nEnter the maximum length keyword to check: ");
+                    max = Console.ReadLine();
+                }
+                double ioc = indexOfCoincidence(toCrypto, maxLen);
+                Console.WriteLine("\nThe most likely keylength is " + ioc);
+                System.Environment.Exit(1);
             }
             runCrypto(toCrypto,keyword,true);
         }

@@ -19,9 +19,9 @@ namespace CSharp
         }
         public static void filePrompt(bool Decrypt){ //prompt for file to use
             if(Decrypt == true)
-                Console.Write("\nEnter the name of the file you want to decrypt (including file extension) Enter \"cancel\" to cancel: "); 
+                Console.Write("\nEnter the name of the file you want to decrypt (including file extension). Enter \"cancel\" to cancel: "); 
             else
-                Console.Write("\nEnter the name of the file you want to encrypt (including file extension) Enter \"cancel\" to cancel: ");
+                Console.Write("\nEnter the name of the file you want to encrypt (including file extension). Enter \"cancel\" to cancel: ");
         }
         public static bool writeBackPrompt(string cryptoed){ //Prompt for writing result to a file
             string input = null;
