@@ -6,6 +6,7 @@ namespace CSharp
 {
     abstract class Cipher
     {
+        public static double[] letterFreqs = { 82, 15, 28, 43, 127, 22, 20, 61, 70, 2, 8, 40, 24, 67, 75, 19, 1, 60, 63, 91, 28, 10, 24, 2, 20, 1 }; //letter frequencies per 1000 letters in English (approximate)
         public static bool keyKnown() { //is the key or shift known
             DialogResult dialogResult = MessageBox.Show("Do you know the correct key or shift value?", "", MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.Yes)
