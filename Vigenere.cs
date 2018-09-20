@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -7,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace CSharp{
     class Vigenere:Cipher{
-        public static string getKnownKeyword()
+        public static string getKnownKeyword() //enter known keyword for decrypting or encrypting
         {
             Console.WriteLine("\nEnter your desired keyword (letters only): ");
             string keyword = Console.ReadLine();
@@ -18,29 +17,29 @@ namespace CSharp{
             }
             return keyword;
         }
-        public static void getKeyword(string toDecipher, int keylength)
+        public static void getUnknownKeyword(string toDecipher, int keylength) //find unknown keyword once length is known
         {
             StringBuilder keywordBuild = new StringBuilder();
-            char nextChar;
-            string currAlphabet;
-            for(int i = 0; i < keylength; i++)
+            char nextChar; //next char to add to keyword
+            string currAlphabet; //current subalphabet to analyze
+            for(int i = 0; i < keylength; i++) //each of n subalphabets of text
             {
                 currAlphabet = getAlphabet(toDecipher, i, keylength);
-                nextChar = (char)(Caesar.calcFreq(currAlphabet, true) + 97);
+                nextChar = (char)(Caesar.calcFreq(currAlphabet, true) + 97); //clever casting of Caesar frequency analysis function (using ascii #)
                 keywordBuild.Append(nextChar);
             }
             string keyword = keywordBuild.ToString();
             Console.WriteLine("The most likely keyword is " + keyword);
-            runCrypto(toDecipher, keyword, true);
+            runCrypto(toDecipher, keyword, true); //use calculated keywordin crypto solver function
         }
         public static string getAlphabet(string text, int offset, int interval)
         {
             int index = offset; //hold initial index for alphabet
-            Regex rgx = new Regex("[^a-z -]");
+            Regex rgx = new Regex("[^a-z -]"); //remove all unnecessary characters for subalphabets
             text = rgx.Replace(text, "");
             text = text.Replace(" ", "");
             StringBuilder stringer = new StringBuilder();
-            while(text.Length >= index+1)
+            while(text.Length >= index+1) //build subalphabet
             {
                 stringer.Append(text[index]); //add each n-th character
                 index += interval;
@@ -78,18 +77,18 @@ namespace CSharp{
             }
             return keylen;
         }
-        public static char convertChar(char toConvert, char keyChar, bool Decrypt, bool isUpper)
+        public static char convertChar(char toConvert, char keyChar, bool Decrypt, bool isUpper) //convert character for encrypt/decrypt
         {
             char toReturn;
             if (Decrypt)
                 toReturn = (char)(toConvert - (keyChar - 97));
             else
                 toReturn = (char)(toConvert + (keyChar - 97));
-            if (toReturn > (char)122)
+            if (toReturn > (char)122) //cycle around
                 toReturn -= (char)26;
-            else if (toReturn < (char)97)
+            else if (toReturn < (char)97) //cycle around
                 toReturn += (char)26;
-            return isUpper ? char.ToUpper(toReturn) : toReturn;
+            return isUpper ? char.ToUpper(toReturn) : toReturn; //preserve case
         }
         public static string runCrypto(string toCrypto, string keyword, bool Decrypt, bool solving = false){
             char nextChar = '\0';
@@ -125,14 +124,14 @@ namespace CSharp{
             toCrypto = toCrypto.ToLower();
             if (Decrypt)
             {
-                if (keyKnown())
+                if (keyKnown()) //known keyword
                 {
                     keyword = getKnownKeyword();
                     runCrypto(toCrypto, keyword, true);
                 }
-                else
+                else //unknown keyword
                 {
-                    Console.WriteLine("\nEnter the maximum length keyword to check: ");
+                    Console.WriteLine("\nEnter the maximum length keyword to check: "); //give range for keyword
                     int maxLen = 0;
                     string max = Console.ReadLine();
                     while (!int.TryParse(max, out maxLen))
@@ -140,15 +139,15 @@ namespace CSharp{
                         Console.WriteLine("\nEnter the maximum length keyword to check: ");
                         max = Console.ReadLine();
                     }
-                    int ioc = indexOfCoincidence(toCrypto, maxLen);
+                    int ioc = indexOfCoincidence(toCrypto, maxLen); //find most likely keyword length
                     Console.WriteLine("\nThe most likely keylength is " + ioc);
-                    getKeyword(toCrypto, ioc);
+                    getUnknownKeyword(toCrypto, ioc); //find the keyword
                     return;
                 }
             }
-            else
+            else //encrypting
             {
-                keyword = getKnownKeyword();
+                keyword = getKnownKeyword(); //gotta know what word you're encrypting with
                 runCrypto(toCrypto, keyword, false);
             }
         }

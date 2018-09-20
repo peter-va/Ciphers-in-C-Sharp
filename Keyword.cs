@@ -9,10 +9,10 @@ namespace CSharp{
         public static char firstMissingChar(Dictionary<char,char> dict, bool Decrypt){ //find first available character for key
             for(int i = 0;i<26;i++){
                 if(Decrypt == true)
-                    if(!dict.ContainsKey((char)(97+i)))
+                    if(!dict.ContainsKey((char)(97+i))) //if key isn't already in dictionary
                         return (char)(97+i);
                 else
-                    if(!dict.ContainsValue((char)(97+i)))
+                    if(!dict.ContainsValue((char)(97+i))) //if key isn't already in dictionary
                         return (char)(97+i);
             }
             return '\0';
@@ -29,13 +29,13 @@ namespace CSharp{
             for(int i = 0;i<26;i++){ //add the rest of the letters in the alphabet
                 if(Decrypt == true){
                     if(!keyword.Contains((char)(97+i))){
-                        Key.Add(firstMissingChar(Key, Decrypt),(char)(97+keyword.Length+foundLetters));
+                        Key.Add(firstMissingChar(Key, Decrypt),(char)(97+keyword.Length+foundLetters)); //get first alphabetic character that is missing from the key
                         foundLetters++;
                     }
                 }
                 else{
                     if(!keyword.Contains((char)(97+i))){
-                        Key.Add((char)(97+keyword.Length+foundLetters),firstMissingChar(Key, Decrypt));
+                        Key.Add((char)(97+keyword.Length+foundLetters),firstMissingChar(Key, Decrypt)); //get first alphabetic character that is missing from the key
                         foundLetters++;
                     }
                 }
@@ -47,12 +47,12 @@ namespace CSharp{
             string newText = null;
             System.Text.StringBuilder cryptoed = new System.Text.StringBuilder(); //build string to return
             for(int i = 0;i<toEncrypt.Length;i++){
-                if(!cryptoKey.ContainsKey(toEncrypt[i]))
-                    cryptoed.Append(toEncrypt[i]);
+                if(!cryptoKey.ContainsKey(toEncrypt[i])) //if character not found in key
+                    cryptoed.Append(toEncrypt[i]); //add character as if nothing happened
                 else
-                    cryptoed.Append(cryptoKey[toEncrypt[i]]);
+                    cryptoed.Append(cryptoKey[toEncrypt[i]]); //add found character's value in key-value pair
             }
-            newText = cryptoed.ToString();
+            newText = cryptoed.ToString(); //convert to string for printing/writing to file
             if(writeBackPrompt(newText) == false) //write back prompt
                 Console.WriteLine(newText);
         }
@@ -78,7 +78,7 @@ namespace CSharp{
                 keyword = Console.ReadLine(); 
             }
             keyword = new string(keyword.ToCharArray().Distinct().ToArray()); //convert keyword to array string
-            keyword = keyword.ToLower();
+            keyword = keyword.ToLower(); //convert to lowercase for simplicity
             runCrypto(toEncrypt, keyword, Decrypt);
         }
     }
