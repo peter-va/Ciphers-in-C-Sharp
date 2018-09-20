@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -6,15 +7,38 @@ using System.Text.RegularExpressions;
 
 namespace CSharp{
     class Vigenere:Cipher{
-        public static void getKeyword(string toDecipher, int ioc)
+        public static string getKnownKeyword()
         {
-            //TODO: find keyword
-            //TODO: decipher (will use runCrypto())
-            return;
+            Console.WriteLine("\nEnter your desired keyword (letters only): ");
+            string keyword = Console.ReadLine();
+            while (!Regex.IsMatch(keyword, @"^[a-zA-Z]+$"))
+            {
+                Console.WriteLine("\nEnter your desired keyword (letters only): ");
+                keyword = Console.ReadLine();
+            }
+            return keyword;
+        }
+        public static void getKeyword(string toDecipher, int keylength)
+        {
+            StringBuilder keywordBuild = new StringBuilder();
+            char nextChar;
+            string currAlphabet;
+            for(int i = 0; i < keylength; i++)
+            {
+                currAlphabet = getAlphabet(toDecipher, i, keylength);
+                nextChar = (char)(Caesar.calcFreq(currAlphabet, true) + 97);
+                keywordBuild.Append(nextChar);
+            }
+            string keyword = keywordBuild.ToString();
+            Console.WriteLine("The most likely keyword is " + keyword);
+            runCrypto(toDecipher, keyword, true);
         }
         public static string getAlphabet(string text, int offset, int interval)
         {
             int index = offset; //hold initial index for alphabet
+            Regex rgx = new Regex("[^a-z -]");
+            text = rgx.Replace(text, "");
+            text = text.Replace(" ", "");
             StringBuilder stringer = new StringBuilder();
             while(text.Length >= index+1)
             {
@@ -54,52 +78,36 @@ namespace CSharp{
             }
             return keylen;
         }
-        public static char getUpperChar(int i, int j){ //get shifted uppercase letter
-           if(65+i+j>90)
-                return (char)(65+i+j-26);
-           else
-                return (char)(65+i+j);
-        }
-        public static char getlowerChar(int i, int j){ //get shifted uppercase letter
-            if(97+i+j>122)
-                return (char)(97+i+j-26);
+        public static char convertChar(char toConvert, char keyChar, bool Decrypt, bool isUpper)
+        {
+            char toReturn;
+            if (Decrypt)
+                toReturn = (char)(toConvert - (keyChar - 97));
             else
-                return (char)(97+i+j);
+                toReturn = (char)(toConvert + (keyChar - 97));
+            if (toReturn > (char)122)
+                toReturn -= (char)26;
+            else if (toReturn < (char)97)
+                toReturn += (char)26;
+            return isUpper ? char.ToUpper(toReturn) : toReturn;
         }
-        public static char[,] buildVigenereSquare(bool lower){ //build vignere square for upper or lowercase
-            char[,] vSquare = new char[26,26];
-            for(int i = 0;i<26;i++){
-                for(int j = 0;j<26;j++){
-                    if(lower == true)
-                        vSquare[i,j] = getlowerChar(i,j);
-                    else
-                        vSquare[i,j] = getUpperChar(i,j);
-                }
-            }
-            return vSquare;
-        }
-        public static void runCrypto(string toCrypto, string keyword, bool Decrypt){
-            char[,] lvSquare = buildVigenereSquare(true); //lowercase square
-            char[,] uvSquare = buildVigenereSquare(false);//uppercase square
+        public static string runCrypto(string toCrypto, string keyword, bool Decrypt, bool solving = false){
             char nextChar = '\0';
+            int numAlpha = 0; //account for nonalphabetic characters
             string toReturn = null; //set up string to return
-            int adjustForNonAlpha = 0; //adjust shifting for any non-alpha characters
-            System.Text.StringBuilder cryptoed = new System.Text.StringBuilder(); //string builder to build string
+            StringBuilder cryptoed = new StringBuilder(); //string builder to build string
             for(int i = 0;i<toCrypto.Length;i++){ //use squares to shift characters
-                if(char.IsLower(toCrypto[i])){ //lowercase
-                    nextChar = lvSquare[(int)toCrypto[i]-97,(int)keyword[(i-adjustForNonAlpha)%keyword.Length]-97];
-                }
-                else if(char.IsUpper(toCrypto[i])) //uppercase
-                    nextChar = uvSquare[(int)toCrypto[i]-65,(int)keyword[(i-adjustForNonAlpha)%keyword.Length]-65];
-                else{ //nonalphabetic
-                    adjustForNonAlpha++;
+                if(char.IsLetter(toCrypto[i])) //letter
+                    nextChar = convertChar(toCrypto[i], keyword[numAlpha++ % keyword.Length], Decrypt, char.IsUpper(toCrypto[i]));
+                else //nonletter
                     nextChar = toCrypto[i];
-                }
                 cryptoed.Append(nextChar);
             }
             toReturn = cryptoed.ToString(); //convert string builder to string
-            if(writeBackPrompt(toReturn) == false) //write back prompt
-                Console.WriteLine(toReturn);
+            if(!solving)
+                if(writeBackPrompt(toReturn) == false) //write back prompt
+                    Console.WriteLine(toReturn);
+            return toReturn;
         }
         public static void Verify(bool Decrypt){
             string filename = null; //self explanatory
@@ -115,31 +123,34 @@ namespace CSharp{
             }
             toCrypto = File.ReadAllText(filename); //get text from file
             toCrypto = toCrypto.ToLower();
-            if (keyKnown())
+            if (Decrypt)
             {
-                Console.WriteLine("\nEnter your desired keyword (letters only): ");
-                keyword = Console.ReadLine();
-                while (!Regex.IsMatch(keyword, @"^[a-zA-Z]+$"))
+                if (keyKnown())
                 {
-                    Console.WriteLine("\nEnter your desired keyword (letters only): ");
-                    keyword = Console.ReadLine();
+                    keyword = getKnownKeyword();
+                    runCrypto(toCrypto, keyword, true);
+                }
+                else
+                {
+                    Console.WriteLine("\nEnter the maximum length keyword to check: ");
+                    int maxLen = 0;
+                    string max = Console.ReadLine();
+                    while (!int.TryParse(max, out maxLen))
+                    {
+                        Console.WriteLine("\nEnter the maximum length keyword to check: ");
+                        max = Console.ReadLine();
+                    }
+                    int ioc = indexOfCoincidence(toCrypto, maxLen);
+                    Console.WriteLine("\nThe most likely keylength is " + ioc);
+                    getKeyword(toCrypto, ioc);
+                    return;
                 }
             }
             else
             {
-                Console.WriteLine("\nEnter the maximum length keyword to check: ");
-                int maxLen = 0;
-                string max = Console.ReadLine();
-                while(!int.TryParse(max, out maxLen)){
-                    Console.WriteLine("\nEnter the maximum length keyword to check: ");
-                    max = Console.ReadLine();
-                }
-                int ioc = indexOfCoincidence(toCrypto, maxLen);
-                Console.WriteLine("\nThe most likely keylength is " + ioc);
-                getKeyword(toCrypto, ioc);
-                System.Environment.Exit(1);
+                keyword = getKnownKeyword();
+                runCrypto(toCrypto, keyword, false);
             }
-            runCrypto(toCrypto,keyword,true);
         }
     }
 }

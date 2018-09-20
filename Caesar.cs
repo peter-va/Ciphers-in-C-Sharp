@@ -17,7 +17,7 @@ namespace CSharp{
             }
             return shift;
         }
-        public static int calcFreq(string toCrypto) //uses frequency analysis to find most likely shift for enciphered text
+        public static int calcFreq(string toCrypto, bool vignere = false) //uses frequency analysis to find most likely shift for enciphered text
         {
             toCrypto = toCrypto.ToLower(); //convert all to lowercase for simplicity
             double[] shiftFreqs = new double[26];
@@ -29,6 +29,7 @@ namespace CSharp{
             Dictionary<char,char> shifts = new Dictionary<char,char>();
             for(int i = 0;i<26;i++){ //for each shift value 0 to 25
                 totalDiff = 0;
+                totalAlphas = 0;
                 Array.Clear(shiftFreqs,0,shiftFreqs.Length);
                 shifts = buildDecryptKey(i+1); //build decipher key for value
                 System.Text.StringBuilder cryptoed = new System.Text.StringBuilder();
@@ -54,6 +55,8 @@ namespace CSharp{
                     bestShiftString = cryptoed.ToString();
                 }
             }
+            if (vignere)
+                return bestShift;
             Console.WriteLine("The most likely shift for this cipher is "+bestShift+".");
             Console.WriteLine("The message produced by this shift is:");
             Console.WriteLine("\n"+bestShiftString);
