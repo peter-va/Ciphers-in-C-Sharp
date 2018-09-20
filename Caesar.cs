@@ -24,22 +24,22 @@ namespace CSharp{
             int bestShift = 0; //hold best shift value
             int totalAlphas = 0; //total alphabetic characters in message (for frequency calculations
             double bestShiftTotal = Double.MaxValue;
-            double totalDiff = 0;
+            double totalDiff = 0; //holding abs difference for each shift
             string bestShiftString = null; //hold decrypted string for best fit
             Dictionary<char,char> shifts = new Dictionary<char,char>();
             for(int i = 0;i<26;i++){ //for each shift value 0 to 25
                 totalDiff = 0;
                 totalAlphas = 0;
                 Array.Clear(shiftFreqs,0,shiftFreqs.Length);
-                shifts = buildDecryptKey(i+1); //build decipher key for value
+                //shifts = buildDecryptKey(i+1); //build decipher key for value
                 System.Text.StringBuilder cryptoed = new System.Text.StringBuilder();
-                char newChar = 'a';
+                char toAdd;
                 for(int j = 0;j<toCrypto.Length;j++){ //decipher with current shift value
                     if(char.IsLetter(toCrypto[j])){ //only shift alphabetic characters
-                        newChar = shifts[toCrypto[j]];
-                        cryptoed.Append(newChar);
-                        shiftFreqs[25-(122-(int)newChar)]++;
-                        totalAlphas++;
+                        toAdd = getShiftedChar(toCrypto[j], i, char.IsUpper(toCrypto[j]), true); //get shifted character
+                        cryptoed.Append(toAdd);
+                        shiftFreqs[25-(122-(int)toAdd)]++; //increment frequency of character
+                        totalAlphas++; //one more alphabetic character (for normalizing frequencies)
                     }
                     else{
                         cryptoed.Append(toCrypto[j]); //put non alphabetic characters back in
@@ -50,7 +50,7 @@ namespace CSharp{
                     totalDiff += Math.Abs(shiftFreqs[k]-letterFreqs[k]); //compare to known frequency table and sum absolute differences
                 }
                 if (bestShiftTotal>totalDiff){ //new best fit
-                    bestShift = i+1;
+                    bestShift = i;
                     bestShiftTotal = totalDiff;
                     bestShiftString = cryptoed.ToString();
                 }
@@ -62,57 +62,24 @@ namespace CSharp{
             Console.WriteLine("\n"+bestShiftString);
             return 0;
         }
-        public static Dictionary<char,char> buildDecryptKey(int shift){
-            Dictionary<char, char> decryptKey = new Dictionary<char, char>();
-            for(int i = 0;i<128;i++){
-                if((i >= 65) && (i <= 90)){ //uppercase
-                    if(i-shift < 65)
-                        decryptKey.Add((char)i, (char)(i-shift+26)); //mod back to correct shifted value
-                    else
-                        decryptKey.Add((char)i, (char)(i-shift));
-                }
-                else if((i >= 97) && (i <= 122)){ //lowercase
-                    if(i-shift < 97)
-                        decryptKey.Add((char)i, (char)(i-shift+26));
-                    else
-                        decryptKey.Add((char)i, (char)(i-shift));
-                }
-                else
-                    decryptKey.Add((char)i, (char)i);
+        public static char getShiftedChar(char toShift, int shift, bool isUpper, bool Decrypt)
+        {
+            if (!char.IsLetter(toShift)) //return nonalphabetic characters
+                return toShift;
+            char shiftChar = isUpper ? 'A' : 'a'; //check case
+            if (Decrypt)
+            {
+                return (char)((((toShift + (26 - shift)) - shiftChar) % 26) + shiftChar); // shift char -> subtract to mod around 26 for simplicity -> add back amount after mod
             }
-            return decryptKey;
-        }
-        public static Dictionary<char,char> buildEncryptKey(int shift){
-            Dictionary<char, char> encryptKey = new Dictionary<char, char>();
-            for(int i = 0;i<128;i++){
-                if((i >= 65) && (i <= 90)){ //uppercase
-                    if(i+shift > 90)
-                        encryptKey.Add((char)i, (char)(i+shift-26)); //mod back to correct shifted value
-                    else
-                        encryptKey.Add((char)i, (char)(i+shift));
-                }
-                else if((i >= 97) && (i <= 122)){ //lowercase
-                    if(i+shift > 122)
-                        encryptKey.Add((char)i, (char)(i+shift-26));
-                    else
-                        encryptKey.Add((char)i, (char)(i+shift));
-                }
-                else
-                    encryptKey.Add((char)i, (char)i);
+            else
+            {
+                return (char)((((toShift + shift) - shiftChar) % 26) + shiftChar); //shift other way on encrypt
             }
-            return encryptKey;
         }
         public static void runCrypto(string toCrypto, int shift, bool Decrypt){
-            Dictionary<char, char> cryptoKey = new Dictionary<char, char>(); //key value pair for shift
-            if(Decrypt == true)
-                cryptoKey = buildDecryptKey(shift); 
-            else
-                cryptoKey = buildEncryptKey(shift); 
             System.Text.StringBuilder cryptoed = new System.Text.StringBuilder(); //string builder for result
-            char newChar = 'a';
             for(int i = 0;i<toCrypto.Length;i++){ //get shifted letter for each letter in text
-                newChar = cryptoKey[toCrypto[i]];
-                cryptoed.Append(newChar);
+                cryptoed.Append(getShiftedChar(toCrypto[i], shift, char.IsUpper(toCrypto[i]), Decrypt)); //get shifted character
             }
             string newText = cryptoed.ToString(); //convert to string for return;
             if(writeBackPrompt(newText) == false)
